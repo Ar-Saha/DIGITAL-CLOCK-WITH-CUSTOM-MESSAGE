@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock with Custom Messages</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            background-color: #f0f0f0; /* Default background color */
+        }
+
+        #clock-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #clock {
+            font-size: 3em;
+            color: #333; /* Default clock color */
+        }
+
+        #date {
+            font-size: 1.2em;
+            color: #555; /* Default date color */
+        }
+
+        #customMessages {
+            font-size: 1.5em;
+            color: #555; /* Default message color */
+            margin-bottom: 20px;
+        }
+
+        #settingsBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+            overflow-y: scroll;
+            max-height: 80%;
+        }
+
+        #closeModalBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        #backgroundInput {
+            margin-top: 10px;
+        }
+
+        .message-input {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button id="settingsBtn" onclick="openSettings()">Settings</button>
+    </div>
+
+    <div id="clock-container">
+        <div id="clock"></div>
+        <div id="date"></div>
+    </div>
+    
+    <div id="customMessages"></div>
+
+    <div id="settingsModal">
+        <div id="closeModalBtn" onclick="closeSettings()">Close</div>
+        <h2>Settings</h2>
+        <label for="clockSize">Clock Size:</label>
+        <input type="number" id="clockSize" onchange="updateClockStyle()"><br>
+        <label for="clockColor">Clock Color:</label>
+        <input type="color" id="clockColor" onchange="updateClockStyle()"><br>
+        <label for="backgroundInput">Insert Image in Background:</label>
+        <input type="file" id="backgroundInput" accept="image/*" onchange="changeBackground()"><br>
+        <label for="backgroundTransparency">Background Transparency:</label>
+        <input type="range" id="backgroundTransparency" min="0" max="1" step="0.1" value="1"><br>
+
+        <label for="dateColor">Date Color:</label>
+        <input type="color" id="dateColor" onchange="updateDateStyle()"><br>
+
+        <label for="customMessagesSize">Custom Messages Size:</label>
+        <input type="number" id="customMessagesSize" onchange="updateCustomMessagesStyle()"><br>
+        <label for="customMessagesColor">Custom Messages Color:</label>
+        <input type="color" id="customMessagesColor" onchange="updateCustomMessagesStyle()"><br>
+
+        <button onclick="submitSettings()">Submit</button>
+    </div>
+
+    <script>
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+            updateClockStyle();
+            updateDateStyle();
+            updateBackground();
+            updateCustomMessagesStyle();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function updateClockStyle() {
+            var clockSize = document.getElementById('clockSize').value + 'em';
+            var clockColor = document.getElementById('clockColor').value;
+            document.getElementById('clock').style.fontSize = clockSize;
+            document.getElementById('clock').style.color = clockColor;
+        }
+
+        function updateDateStyle() {
+            var dateColor = document.getElementById('dateColor').value;
+            document.getElementById('date').style.color = dateColor;
+        }
+
+        function updateBackground() {
+            var backgroundInput = document.getElementById('backgroundInput');
+            if (backgroundInput.files.length > 0) {
+                var imageUrl = URL.createObjectURL(backgroundInput.files[0]);
+                var transparency = document.getElementById('backgroundTransparency').value;
+                var bodyElement = document.body;
+                bodyElement.style.backgroundImage = `url(${imageUrl})`;
+                bodyElement.style.backgroundSize = 'cover';
+                bodyElement.style.backgroundPosition = 'center';
+                bodyElement.style.backgroundRepeat = 'no-repeat';
+                bodyElement.style.backgroundColor = `rgba(255, 255, 255, ${1 - transparency})`;
+            }
+        }
+
+        function changeBackground() {
+            updateBackground();
+        }
+
+        function updateCustomMessagesStyle() {
+    var customMessagesSize = document.getElementById('customMessagesSize').value + 'em';
+    var customMessagesColor = document.getElementById('customMessagesColor').value;
+    var customMessagesElement = document.getElementById('customMessages');
+    customMessagesElement.style.fontSize = customMessagesSize;
+    customMessagesElement.style.color = customMessagesColor;
+        }
+
+
+        function submitSettings() {
+            // Add logic to handle submitted settings
+            console.log('Settings Submitted!');
+            closeSettings(); // Close the settings modal after submission
+        }
+
+        function updateClock() {
+            var now = new Date();
+            var hours = now.getHours();
+            var minutes = now.getMinutes();
+            var seconds = now.getSeconds();
+            var day = now.toLocaleString('en-US', { weekday: 'long' });
+            var date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            var timeString = hours + ':' + minutes + ':' + seconds;
+            var dateString = day + ', ' + date;
+
+            document.getElementById('clock').innerText = timeString;
+            document.getElementById('date').innerText = dateString;
+
+            // Update custom messages based on the current time
+            var messages = getCustomMessages(now);
+
+            document.getElementById('customMessages').innerHTML = messages.join('<br>');
+        }
+
+        function getCustomMessages(now) {
+            var messages = [];
+
+            var isSaturday = now.getDay() === 6; // Saturday
+
+            var intervals = [
+                { start: { h: 6 }, end: { h: 11, m: 59 }, message: 'GOOD MORNING!' },
+                { start: { h: 12 }, end: { h: 18 }, message: 'GOOD AFTERNOON!' },
+                { start: { h: 10, m: 38 }, end: { h: 10, m: 41 }, message: 'IT\'S TIME FOR PRAYER.' },
+                { start: { h: 10, m: 41 }, end: { h: 10, m: 50 }, message: '1ST PERIOD WILL START SOON...' },
+                { start: { h: 10, m: 50 }, end: { h: 11, m: 30 }, message: '1ST PERIOD IS RUNNING...' },
+                { start: { h: 11, m: 30, s: 10 }, end: { h: 12, m: 10, s: 10 }, message: '2ND PERIOD IS RUNNING...' },
+                { start: { h: 12, m: 10, s: 10 }, end: { h: 12, m: 50, s: 10 }, message: '3RD PERIOD IS RUNNING...' },
+                { start: { h: 12, m: 50, s: 10 }, end: { h: 13, m: 30, s: 10 }, message: '4TH PERIOD RUNNING...' },
+                { start: { h: 13, m: 30 }, end: { h: 14, m: 10 }, message: 'IT\'S TIME FOR TIFFIN.' },
+                { start: { h: 14, m: 10, s: 10 }, end: { h: 14, m: 45, s: 10 }, message: '5TH PERIOD IS RUNNING...' },
+                { start: { h: 14, m: 45, s: 10 }, end: { h: 15, m: 20, s: 10 }, message: '6TH PERIOD IS RUNNING...' },
+                { start: { h: 15, m: 20, s: 10 }, end: { h: 15, m: 55, s: 10 }, message: '7TH PERIOD IS RUNNING...' },
+                { start: { h: 15, m: 55, s: 10 }, end: { h: 16, m: 30 }, message: 'LAST PERIOD IS RUNNING...' },
+                { start: { h: 16, m: 30 }, end: { h: 23, m: 59, s: 59 }, message: 'IT\'S TIME TO SAY GOODBYE.' },
+            ];
+
+            for (var i = 0; i < intervals.length; i++) {
+                var interval = intervals[i];
+
+                // Check if it's Saturday, and if so, modify the message interval
+                if (isSaturday && interval.end.h >= 13 && interval.end.m >= 30) {
+                    interval.end.h = 13;
+                    interval.end.m = 30;
+                    interval.message = 'IT\'S TIME TO SAY GOODBYE.';
+                }
+
+                if (isWithinTimeRange(now, interval.start, interval.end)) {
+                    messages.push('<span style="color: #0066ff;">' + interval.message + '</span>');
+                    break; // Show only the message from the first matching interval
+                }
+            }
+
+            return messages;
+        }
+
+        function isWithinTimeRange(now, start, end) {
+            var currentHour = now.getHours();
+            var currentMinute = now.getMinutes();
+            var currentSecond = now.getSeconds();
+
+            return (
+                (currentHour > start.h || (currentHour === start.h && currentMinute >= start.m && currentSecond >= (start.s || 0))) &&
+                (currentHour < end.h || (currentHour === end.h && currentMinute <= end.m && currentSecond <= (end.s || 0)))
+            );
+        }
+
+        // Initial call to set up the clock, custom messages, and background
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
